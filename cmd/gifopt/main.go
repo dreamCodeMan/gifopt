@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	pip "github.com/JamesMilnerUK/pip-go"
 	"github.com/donatj/gifopt"
 )
 
@@ -40,8 +41,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	t := (*threshold * gifopt.MaxDistance) / 100
-	g = gifopt.InterframeCompress(g, uint32(t))
+	polys := []gifopt.PolygonThreshold{
+		{
+			Threshold: distFromPercent(0),
+			Polygon: pip.Polygon{
+				Points: []pip.Point{{157, 78}, {194, 62}, {287, 57}, {328, 64}, {335, 110}, {317, 178}, {267, 219}, {222, 219}, {182, 178}, {158, 115}, {157, 78}},
+			},
+		},
+	}
+
+	g = gifopt.InterframeCompress(g, distFromPercent(*threshold), polys)
 
 	outfile, err := os.Create(*filename)
 	defer outfile.Close()
@@ -49,4 +58,8 @@ func main() {
 		log.Fatal(err)
 	}
 	gif.EncodeAll(outfile, g)
+}
+
+func distFromPercent(percent float64) uint32 {
+	return uint32((percent * gifopt.MaxDistance) / 100)
 }
